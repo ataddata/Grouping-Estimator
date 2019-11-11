@@ -1,0 +1,29 @@
+# Grouping-Estimator
+
+class GroupingEstimator(base.BaseEstimator, base.RegressorMixin):
+    # This Grouping Estimator class groups by a specific column from a dataframe and makes predictions based on each group
+    
+    def __init__(self, column, estimator):
+        self.column = column  # column name to group by
+        self.estimator = estimator  # estimator (scikit-learn object) to be used
+    
+    def fit(self, X, y=None):
+        cityd = dict(tuple(X.groupby(self.column)))
+        self.dic = {}
+        
+        p = self.estimator() # create instance of estimator before fitting
+        
+        for key, value in cityd.items():  # dictionary lookup and use respective estimator
+            model = p.fit(value,value['temp'])
+            self.dic[key] = model
+            
+        return self
+
+    def predict(self, X):
+     # make predictions on input, which is a dataframe
+        newpredict = []
+        
+        for index, row in X.iterrows():
+            newpredict.extend(list(self.dic[row['city']].predict(pd.DataFrame(row).transpose())))
+       
+       return newpredict
